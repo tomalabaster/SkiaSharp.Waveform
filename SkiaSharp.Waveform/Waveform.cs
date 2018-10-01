@@ -28,7 +28,7 @@ namespace SkiaSharp.Waveform
         /// <summary>
         /// Gets or sets an array of normalized amplitude values;
         /// </summary>
-        public float[] Amplitudes { get; set; }
+        public float[] Amplitudes { get; set; } = new float[0];
 
         /// <summary>
         /// Gets or sets the spacing between each plotted amplitude.
@@ -43,7 +43,12 @@ namespace SkiaSharp.Waveform
         /// <summary>
         /// Gets or sets the width of the stroke.
         /// </summary>
-        public int StrokeWidth { get; set; }
+        public int StrokeWidth { get; set; } = 1;
+
+        /// <summary>
+        /// Gets or sets the color of the waveform.
+        /// </summary>
+        public SKColor Color { get; set; } = SKColors.Blue;
 
         /// <summary>
         /// Gets the scaled spacing.
@@ -101,7 +106,7 @@ namespace SkiaSharp.Waveform
             return new SKPaint()
             {
                 IsAntialias = true,
-                Color = new SKColor(0x00, 0x00, 0xff),
+                Color = this.Color,
                 StrokeCap = SKStrokeCap.Round,
                 Style = SKPaintStyle.Stroke,
                 StrokeWidth = this.StrokeWidth * this.Scale
