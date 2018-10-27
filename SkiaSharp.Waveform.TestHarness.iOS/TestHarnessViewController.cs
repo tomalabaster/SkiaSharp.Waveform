@@ -7,8 +7,11 @@
 namespace Blank
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Timers;
-
+    using AVFoundation;
+    using CoreAnimation;
     using Foundation;
     using SkiaSharp.Views.iOS;
     using SkiaSharp.Waveform;
@@ -20,6 +23,11 @@ namespace Blank
     [Register("TestHarnessViewController")]
     public class TestHarnessViewController : UIViewController
     {
+
+        private AVAudioPlayer player;
+        private NSError error;
+        private NSUrl url;
+
         /// <summary>
         /// The <see cref="SKCanvasView"/> that the test harness will be drawing too.
         /// </summary>
@@ -31,9 +39,9 @@ namespace Blank
         private Waveform waveform;
 
         /// <summary>
-        /// The <see cref="Timer"/> object that handles the timing functions for drawing running waveforms.
+        /// The sample rate that the waveform should draw for.
         /// </summary>
-        private Timer timer;
+        private int sampleRate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestHarnessViewController"/> class.
@@ -49,11 +57,12 @@ namespace Blank
         {
             base.ViewDidLoad();
 
-            this.waveform = new Waveform()
-            {
-                Amplitudes = this.GetAmplitudeValues(),
-                Scale = (float)UIScreen.MainScreen.Scale
-            };
+            this.sampleRate = 44100;
+
+            this.waveform = new Waveform.Builder()
+                .FromFile(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"), this.sampleRate)
+                .WithScale((float)UIScreen.MainScreen.Scale)
+                .Build();
 
             this.canvasView = new SKCanvasView(this.View.Frame);
             this.canvasView.PaintSurface += this.CanvasView_PaintSurface;
@@ -78,6 +87,8 @@ namespace Blank
         private void CanvasView_Tapped()
         {
             this.SetupTimer();
+            this.SetupPlayback();
+            this.player.Play();
         }
 
         /// <summary>
@@ -103,14 +114,48 @@ namespace Blank
         /// </summary>
         private void SetupTimer()
         {
-            this.timer = new Timer();
-            this.timer.Interval = 1000 / 24;
-            this.timer.Enabled = true;
-            this.timer.Elapsed += (object sender, ElapsedEventArgs e) =>
+            var link = CADisplayLink.Create(() =>
             {
-                this.waveform.Offset += 1;
+                this.waveform.Offset = (int)(this.player.CurrentTime * this.sampleRate);
                 BeginInvokeOnMainThread(this.canvasView.SetNeedsDisplay);
-            };
+            });
+
+            link.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Default);
+        }
+
+        private bool SetupPlayback()
+        {
+            var audioSession = AVAudioSession.SharedInstance();
+
+            this.error = audioSession.SetCategory(AVAudioSessionCategory.Playback);
+
+            if (this.error != null)
+            {
+                return false;
+            }
+
+            this.error = audioSession.SetActive(true);
+
+            if (this.error != null)
+            {
+                return false;
+            }
+
+            this.url = NSUrl.FromFilename(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"));
+
+            try
+            {
+                this.player = AVAudioPlayer.FromUrl(this.url, out this.error);
+            }
+            catch
+            {
+                return false;
+            }
+
+            this.player.PrepareToPlay();
+            this.player.MeteringEnabled = true;
+
+            return this.error == null;
         }
     }
 }
