@@ -6,7 +6,6 @@
 //-----------------------------------------------------------------------
 namespace SkiaSharp.Waveform
 {
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using SkiaSharp;
@@ -24,14 +23,14 @@ namespace SkiaSharp.Waveform
         }
 
         /// <summary>
-        /// Gets or sets the scale of the waveform. This should be based on screen density.
-        /// </summary>
-        public float Scale { get; set; } = 1f;
-
-        /// <summary>
         /// Gets or sets an array of normalized amplitude values.
         /// </summary>
         public float[] Amplitudes { get; set; } = new float[0];
+
+        /// <summary>
+        /// Gets or sets the scale of the waveform. This should be based on screen density.
+        /// </summary>
+        public float Scale { get; set; } = 1f;
 
         /// <summary>
         /// Gets or sets the spacing between each plotted amplitude.
@@ -213,18 +212,13 @@ namespace SkiaSharp.Waveform
             }
 
             /// <summary>
-            /// Takes in an absolute path to a WAV file with the sample rate at which to read it at.
+            /// Sets the amplitudes for the Waveform to draw.
             /// </summary>
             /// <returns>The Builder.</returns>
-            /// <param name="filePath">File path.</param>
-            /// <param name="sampleRate">Sample rate.</param>
-            public Builder FromFile(string filePath, int sampleRate)
+            /// <param name="amplitudes">Amplitudes.</param>
+            public Builder WithAmplitudes(float[] amplitudes)
             {
-                var left = new double[0];
-                var right = new double[0];
-
-                this.waveform.OpenWav(filePath, out left, out right);
-                this.waveform.Amplitudes = left.Select(x => (float)x).Where((x, i) => i % (44100 / sampleRate) == 0).ToArray();
+                this.waveform.Amplitudes = amplitudes;
 
                 return this;
             }
@@ -237,6 +231,59 @@ namespace SkiaSharp.Waveform
             public Builder WithScale(float scale)
             {
                 this.waveform.Scale = scale;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the spacing between peaks.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="spacing">Spacing.</param>
+            public Builder WithSpacing(float spacing)
+            {
+                this.waveform.Spacing = spacing;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the width of the stroke to draw with.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="strokeWidth">Stroke width.</param>
+            public Builder WithStrokeWidth(float strokeWidth)
+            {
+                this.waveform.StrokeWidth = strokeWidth;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the color.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="color">Color.</param>
+            public Builder WithColor(SKColor color)
+            {
+                this.waveform.Color = color;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Takes in an absolute path to a WAV file with the sample rate at which to read it at.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="filePath">File path.</param>
+            /// <param name="sampleRate">Sample rate.</param>
+            public Builder FromFile(string filePath, int sampleRate)
+            {
+                var left = new double[0];
+                var right = new double[0];
+
+                this.waveform.OpenWav(filePath, out left, out right);
+                this.waveform.Amplitudes = left.Select(x => (float)x).Where((x, i) => i % (44100 / sampleRate) == 0).ToArray();
 
                 return this;
             }

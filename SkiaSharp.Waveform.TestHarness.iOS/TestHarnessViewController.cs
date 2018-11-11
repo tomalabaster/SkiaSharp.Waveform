@@ -91,24 +91,6 @@ namespace Blank
         }
 
         /// <summary>
-        /// Used to create some random data for the waveform.
-        /// </summary>
-        /// <returns>Float array for values between 0 and 1.</returns>
-        private float[] GetAmplitudeValues()
-        {
-            var random = new Random();
-
-            var amplitudes = new float[1000];
-
-            for (var i = 0; i < 1000; i++)
-            {
-                amplitudes[i] = (float)random.NextDouble();
-            }
-
-            return amplitudes;
-        }
-
-        /// <summary>
         /// Sets up the timer for drawing the waveform if it is playing.
         /// </summary>
         private void SetupTimer()
@@ -122,6 +104,10 @@ namespace Blank
             link.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Default);
         }
 
+        /// <summary>
+        /// Setups the playback for the test audio file..
+        /// </summary>
+        /// <returns><c>true</c>, if playback was setup successfully, <c>false</c> otherwise.</returns>
         private bool SetupPlayback()
         {
             var audioSession = AVAudioSession.SharedInstance();
