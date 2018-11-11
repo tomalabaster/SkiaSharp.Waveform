@@ -23,7 +23,6 @@ namespace Blank
     [Register("TestHarnessViewController")]
     public class TestHarnessViewController : UIViewController
     {
-
         private AVAudioPlayer player;
         private NSError error;
         private NSUrl url;

@@ -182,21 +182,42 @@ namespace SkiaSharp.Waveform
             right = left.Select(x => x * 10).ToArray();
         }
 
+        /// <summary>
+        /// Converts bytes to doubles.
+        /// </summary>
+        /// <returns>The result of converting the bytes to the double.</returns>
+        /// <param name="firstByte">First byte.</param>
+        /// <param name="secondByte">Second byte.</param>
         private double BytesToDouble(byte firstByte, byte secondByte)
         {
             short s = (short)((secondByte << 8) | firstByte);
             return s / 32768.0;
         }
 
+        /// <summary>
+        /// The builder class which enables the creation of a Waveform in a fluent manner.
+        /// </summary>
         public class Builder
         {
+            /// <summary>
+            /// The Waveform being constructed by the builder.
+            /// </summary>
             private Waveform waveform;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:SkiaSharp.Waveform.Waveform.Builder"/> class.
+            /// </summary>
             public Builder()
             {
                 this.waveform = new Waveform();
             }
 
+            /// <summary>
+            /// Takes in an absolute path to a WAV file with the sample rate at which to read it at.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="filePath">File path.</param>
+            /// <param name="sampleRate">Sample rate.</param>
             public Builder FromFile(string filePath, int sampleRate)
             {
                 var left = new double[0];
@@ -208,6 +229,11 @@ namespace SkiaSharp.Waveform
                 return this;
             }
 
+            /// <summary>
+            /// Sets the scale of the Waveform. This should be based on the screen density of the target display.
+            /// </summary>
+            /// <returns>The Builder.</returns>
+            /// <param name="scale">Scale.</param>
             public Builder WithScale(float scale)
             {
                 this.waveform.Scale = scale;
@@ -215,6 +241,10 @@ namespace SkiaSharp.Waveform
                 return this;
             }
 
+            /// <summary>
+            /// Builds the Waveform from the properties specified in the fluent methods.
+            /// </summary>
+            /// <returns>The Waveform.</returns>
             public Waveform Build()
             {
                 return this.waveform;
