@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Authors>Tom Alabaster</Authors>
-    <Description>A library for drawing waveforms using SkiaSharp.</Description>
+    <Description>A library for drawing and generating waveforms using SkiaSharp.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Copyright>2018 Tom Alabaster</Copyright>
     <RepositoryUrl>https://github.com/tomalabaster/SkiaSharp.Waveform</RepositoryUrl>
