@@ -7,8 +7,11 @@
 namespace Blank
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Timers;
-
+    using AVFoundation;
+    using CoreAnimation;
     using Foundation;
     using SkiaSharp.Views.iOS;
     using SkiaSharp.Waveform;
@@ -21,6 +24,11 @@ namespace Blank
     public class TestHarnessViewController : UIViewController
     {
         /// <summary>
+        /// The <see cref="AVAudioPlayer"/> used for testing the <see cref="Waveform"/>.
+        /// </summary>
+        private AVAudioPlayer player;
+
+        /// <summary>
         /// The <see cref="SKCanvasView"/> that the test harness will be drawing too.
         /// </summary>
         private SKCanvasView canvasView;
@@ -31,9 +39,9 @@ namespace Blank
         private Waveform waveform;
 
         /// <summary>
-        /// The <see cref="Timer"/> object that handles the timing functions for drawing running waveforms.
+        /// The sample rate that the waveform should draw for.
         /// </summary>
-        private Timer timer;
+        private int sampleRate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestHarnessViewController"/> class.
@@ -49,11 +57,12 @@ namespace Blank
         {
             base.ViewDidLoad();
 
-            this.waveform = new Waveform()
-            {
-                Amplitudes = this.GetAmplitudeValues(),
-                Scale = (float)UIScreen.MainScreen.Scale
-            };
+            this.sampleRate = 44100;
+
+            this.waveform = new Waveform.Builder()
+                .FromFile(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"), this.sampleRate)
+                .WithScale((float)UIScreen.MainScreen.Scale)
+                .Build();
 
             this.canvasView = new SKCanvasView(this.View.Frame);
             this.canvasView.PaintSurface += this.CanvasView_PaintSurface;
@@ -78,24 +87,8 @@ namespace Blank
         private void CanvasView_Tapped()
         {
             this.SetupTimer();
-        }
-
-        /// <summary>
-        /// Used to create some random data for the waveform.
-        /// </summary>
-        /// <returns>Float array for values between 0 and 1.</returns>
-        private float[] GetAmplitudeValues()
-        {
-            var random = new Random();
-
-            var amplitudes = new float[1000];
-
-            for (var i = 0; i < 1000; i++)
-            {
-                amplitudes[i] = (float)random.NextDouble();
-            }
-
-            return amplitudes;
+            this.SetupPlayback();
+            this.player.Play();
         }
 
         /// <summary>
@@ -103,14 +96,52 @@ namespace Blank
         /// </summary>
         private void SetupTimer()
         {
-            this.timer = new Timer();
-            this.timer.Interval = 1000 / 24;
-            this.timer.Enabled = true;
-            this.timer.Elapsed += (object sender, ElapsedEventArgs e) =>
+            var link = CADisplayLink.Create(() =>
             {
-                this.waveform.Offset += 1;
+                this.waveform.Offset = (int)(this.player.CurrentTime * this.sampleRate);
                 BeginInvokeOnMainThread(this.canvasView.SetNeedsDisplay);
-            };
+            });
+
+            link.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Default);
+        }
+
+        /// <summary>
+        /// Setups the playback for the test audio file..
+        /// </summary>
+        /// <returns><c>true</c>, if playback was setup successfully, <c>false</c> otherwise.</returns>
+        private bool SetupPlayback()
+        {
+            var audioSession = AVAudioSession.SharedInstance();
+
+            var error = audioSession.SetCategory(AVAudioSessionCategory.Playback);
+
+            if (error != null)
+            {
+                return false;
+            }
+
+            error = audioSession.SetActive(true);
+
+            if (error != null)
+            {
+                return false;
+            }
+
+            var url = NSUrl.FromFilename(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"));
+
+            try
+            {
+                this.player = AVAudioPlayer.FromUrl(url, out error);
+            }
+            catch
+            {
+                return false;
+            }
+
+            this.player.PrepareToPlay();
+            this.player.MeteringEnabled = true;
+
+            return error == null;
         }
     }
 }
