@@ -125,7 +125,6 @@ namespace SkiaSharp.Waveform
             return amplitudeIndex % 2 == 0 ? 1 : -1;
         }
 
-
         /// <summary>
         /// Opens a WAV file by extracting the peaks for left and right channels into double arrays.
         /// </summary>
@@ -149,19 +148,29 @@ namespace SkiaSharp.Waveform
             while (!(wav[pos] == 100 && wav[pos + 1] == 97 && wav[pos + 2] == 116 && wav[pos + 3] == 97))
             {
                 pos += 4;
-                int chunkSize = wav[pos] + wav[pos + 1] * 256 + wav[pos + 2] * 65536 + wav[pos + 3] * 16777216;
+                int chunkSize = wav[pos] + (wav[pos + 1] * 256) + (wav[pos + 2] * 65536) + (wav[pos + 3] * 16777216);
                 pos += 4 + chunkSize;
             }
+
             pos += 8;
 
             // Pos is now positioned to start of actual sound data.
             int samples = (wav.Length - pos) / 2;     // 2 bytes per sample (16 bit sound mono)
-            if (channels == 2) samples /= 2;        // 4 bytes per sample (16 bit stereo)
+            if (channels == 2)
+            {
+                samples /= 2;        // 4 bytes per sample (16 bit stereo)
+            }
 
             // Allocate memory (right will be null if only mono sound)
             left = new double[samples];
-            if (channels == 2) right = new double[samples];
-            else right = null;
+            if (channels == 2)
+            {
+                right = new double[samples];
+            }
+            else
+            {
+                right = null;
+            }
 
             // Write to double array/s:
             int i = 0;
@@ -174,6 +183,7 @@ namespace SkiaSharp.Waveform
                     right[i] = this.BytesToDouble(wav[pos], wav[pos + 1]);
                     pos += 2;
                 }
+
                 i++;
             }
 
@@ -215,7 +225,7 @@ namespace SkiaSharp.Waveform
             /// Sets the amplitudes for the Waveform to draw.
             /// </summary>
             /// <returns>The Builder.</returns>
-            /// <param name="amplitudes">Amplitudes.</param>
+            /// <param name="amplitudes">Amplitude values to draw the waveform based on.</param>
             public Builder WithAmplitudes(float[] amplitudes)
             {
                 this.waveform.Amplitudes = amplitudes;
@@ -227,7 +237,7 @@ namespace SkiaSharp.Waveform
             /// Sets the scale of the Waveform. This should be based on the screen density of the target display.
             /// </summary>
             /// <returns>The Builder.</returns>
-            /// <param name="scale">Scale.</param>
+            /// <param name="scale">Scale of the current display.</param>
             public Builder WithScale(float scale)
             {
                 this.waveform.Scale = scale;
@@ -239,7 +249,7 @@ namespace SkiaSharp.Waveform
             /// Sets the spacing between peaks.
             /// </summary>
             /// <returns>The Builder.</returns>
-            /// <param name="spacing">Spacing.</param>
+            /// <param name="spacing">Spacing between peaks.</param>
             public Builder WithSpacing(float spacing)
             {
                 this.waveform.Spacing = spacing;
@@ -263,7 +273,7 @@ namespace SkiaSharp.Waveform
             /// Sets the color.
             /// </summary>
             /// <returns>The Builder.</returns>
-            /// <param name="color">Color.</param>
+            /// <param name="color">Color of the waveform.</param>
             public Builder WithColor(SKColor color)
             {
                 this.waveform.Color = color;

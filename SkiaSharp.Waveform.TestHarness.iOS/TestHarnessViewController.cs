@@ -23,9 +23,10 @@ namespace Blank
     [Register("TestHarnessViewController")]
     public class TestHarnessViewController : UIViewController
     {
+        /// <summary>
+        /// The <see cref="AVAudioPlayer"/> used for testing the <see cref="Waveform"/>.
+        /// </summary>
         private AVAudioPlayer player;
-        private NSError error;
-        private NSUrl url;
 
         /// <summary>
         /// The <see cref="SKCanvasView"/> that the test harness will be drawing too.
@@ -112,25 +113,25 @@ namespace Blank
         {
             var audioSession = AVAudioSession.SharedInstance();
 
-            this.error = audioSession.SetCategory(AVAudioSessionCategory.Playback);
+            var error = audioSession.SetCategory(AVAudioSessionCategory.Playback);
 
-            if (this.error != null)
+            if (error != null)
             {
                 return false;
             }
 
-            this.error = audioSession.SetActive(true);
+            error = audioSession.SetActive(true);
 
-            if (this.error != null)
+            if (error != null)
             {
                 return false;
             }
 
-            this.url = NSUrl.FromFilename(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"));
+            var url = NSUrl.FromFilename(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.wav"));
 
             try
             {
-                this.player = AVAudioPlayer.FromUrl(this.url, out this.error);
+                this.player = AVAudioPlayer.FromUrl(url, out error);
             }
             catch
             {
@@ -140,7 +141,7 @@ namespace Blank
             this.player.PrepareToPlay();
             this.player.MeteringEnabled = true;
 
-            return this.error == null;
+            return error == null;
         }
     }
 }
